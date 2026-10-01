@@ -29,7 +29,7 @@ Exit code는 0=PASS/WARN, 1=rule FAIL, 2=input/CLI error입니다.
 | 검증 항목 | observed 결과 |
 |---|---|
 | Tests | 로컬 pytest **509 passed** |
-| Final CI | [GitHub Actions run 36883802291](https://github.com/eunsu7997/gpu-deploy-guard/actions/runs/36883802291) — SUCCESS |
+| Final CI | [GitHub Actions CI Validation](https://github.com/eunsu7997/gpu-deploy-guard/actions/workflows/ci.yml) — latest `main` run SUCCESS |
 | Host GPU | NVIDIA GeForce RTX 4060 인식 |
 | Docker GPU | CUDA 컨테이너에서 GPU access 확인 |
 | CUDA compute | NVIDIA vector addition `Test PASSED` |
@@ -127,7 +127,7 @@ Evidence에는 kubeconfig 전체, token, certificate, private key 또는 Secret 
 ## CI / Test
 
 - Local: Python 3.14.7, pytest 9.1.1, **509 passed**
-- CI: Ubuntu / Python 3.12, [CI Validation SUCCESS](https://github.com/eunsu7997/gpu-deploy-guard/actions/runs/36883802291)
+- CI: Ubuntu / Python 3.12, [CI Validation](https://github.com/eunsu7997/gpu-deploy-guard/actions/workflows/ci.yml) — latest `main` run SUCCESS
 - Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml)
 - CI 범위: 전체 pytest, Static good exit 0, Static bad exit 1, validation artifact 업로드
 - CI는 실제 Kubernetes API나 GPU Node에 연결하지 않습니다.
