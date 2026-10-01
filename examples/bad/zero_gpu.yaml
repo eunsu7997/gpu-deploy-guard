@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zero-gpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zero-gpu
+  template:
+    metadata:
+      labels:
+        app: zero-gpu
+    spec:
+      containers:
+        - name: workload
+          image: example.invalid/llm-workload:placeholder
+          resources:
+            limits:
+              nvidia.com/gpu: 0

@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Test and CI output
+.coverage
+.coverage.*
+htmlcov/
+artifacts/
+
+# Editor settings
+.vscode/
+.idea/
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+.aws/
+.kube/
+*.pem
+*.key
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo

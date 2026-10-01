@@ -1,0 +1,59 @@
+name: CI Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install project and test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run all tests
+        run: python -m pytest --junitxml=artifacts/pytest.xml
+
+      - name: Static good example must exit 0
+        run: |
+          mkdir -p artifacts
+          python -m gpu_guard check examples/good/probes_complete.yaml > artifacts/static-good.json
+          cat artifacts/static-good.json
+          echo "Static good example: expected exit 0, actual exit 0" > artifacts/static-good-exit.txt
+
+      - name: Static bad example must exit 1
+        run: |
+          set +e
+          python -m gpu_guard check examples/bad/invalid_probe_handler.yaml > artifacts/static-bad.json
+          actual_exit=$?
+          set -e
+          cat artifacts/static-bad.json
+          echo "Static bad example: expected exit 1, actual exit ${actual_exit}" | tee artifacts/static-bad-exit.txt
+          test "${actual_exit}" -eq 1
+
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-evidence
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn

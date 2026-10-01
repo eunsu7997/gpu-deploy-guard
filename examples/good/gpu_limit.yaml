@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-workload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gpu-workload
+  template:
+    metadata:
+      labels:
+        app: gpu-workload
+    spec:
+      containers:
+        - name: workload
+          image: example.invalid/llm-workload:placeholder
+          resources:
+            limits:
+              nvidia.com/gpu: 1

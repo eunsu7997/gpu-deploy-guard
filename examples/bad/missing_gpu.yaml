@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: missing-gpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: missing-gpu
+  template:
+    metadata:
+      labels:
+        app: missing-gpu
+    spec:
+      containers:
+        - name: workload
+          image: example.invalid/llm-workload:placeholder
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi

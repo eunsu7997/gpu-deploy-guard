@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resource-example
+  template:
+    metadata:
+      labels:
+        app: resource-example
+    spec:
+      containers:
+      - name: workload
+        image: example.invalid/llm-workload:placeholder
+        resources:
+          requests:
+            cpu: 500m
+            memory: 4Gi
+          limits:
+            cpu: '2'
+            memory: 8Gi
+            nvidia.com/gpu: 1
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        readinessProbe:
+          tcpSocket:
+            port: 8080
