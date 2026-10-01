@@ -2,6 +2,10 @@
 
 **Kubernetes GPU/LLM workload를 배포하기 전에 YAML과 실제 cluster 상태를 검사해 배포 실패 원인을 미리 잡는 deterministic Python CLI.**
 
+![GPUDeploy Guard validation summary](docs/images/gpu-deploy-guard-summary.svg)
+
+> **검증 핵심:** 배포 전 `allocatable=0, required=2`로 GPU capacity 부족을 FAIL 판정했고, 실제 Kubernetes scheduler도 `Insufficient nvidia.com/gpu`로 같은 원인을 보고했습니다.
+
 ## Problem
 
 Kubernetes API가 Deployment object를 생성해도 GPU capacity, selector, affinity,
