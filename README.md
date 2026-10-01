@@ -435,3 +435,72 @@ probes_complete.yaml은 6개 check PASS와 exit 0,
 invalid_probe_handler.yaml은 resource 3개 PASS·probe 3개 FAIL과 기대 exit 1을 확인했습니다.
 두 CI shell step 자체는 모두 성공(exit 0)했습니다.
 로컬 evidence는 artifacts/에 저장하며 Git에서는 제외합니다. 이는 GitHub Ubuntu runner 실행 검증이 아닙니다.
+
+## Live Kubernetes Validation
+
+2026-10-01, baseline commit `03131cea55fed88a7c7316be25bf3359236eda43`에서
+Fake/Mock 주입 없이 실제 CLI의 `KubectlRunner`와 로컬 kind Kubernetes API를 연결해 검증했습니다.
+앞선 단계의 "Live 미검증"/"kubectl 부재" 기록은 당시 개발 환경의 기록이며,
+이번 검증으로 아래 CPU-only Live 조회 범위를 추가 확인했습니다.
+
+환경: Windows / Docker Server 29.8.0 / Python 3.14.7 / kubectl v1.36.1 /
+kind v0.33.0 / Kubernetes Node v1.37.0.
+실제 context는 `kind-gpu-guard-lab`, Node는 `gpu-guard-lab-control-plane` 1개이며 Ready입니다.
+이 kind Node는 `nvidia.com/gpu` allocatable 키가 없는 **CPU-only Kubernetes 검증 환경**입니다.
+호스트의 물리 GPU 유무를 뜻하지 않습니다.
+
+### VERIFIED
+
+- 실제 kubectl executable 인식 및 current context 조회
+- 실제 Kubernetes API 연결 및 Ready Node 조회 (1/1 Ready)
+- 실제 Node snapshot 파싱: 이름, Ready, labels, taints, unschedulable 및 GPU 키 누락 처리
+- GPU allocatable이 없는 실제 Node에 대해 GPU 2개 요청 workload의 capacity 부족 판정
+
+| 실제 cluster-check 항목 | 결과 |
+|---|---|
+| kubectl_availability | PASS |
+| current_context | PASS — kind-gpu-guard-lab |
+| api_connection | PASS — kubectl get nodes succeeded |
+| node_ready | PASS — nodes.total=1, nodes.ready=1 |
+| gpu_allocatable | WARN — nvidia.com/gpu 키 누락, 0으로 해석 |
+| nvidia_device_plugin | WARN — kube-system Pod 8개 중 이름/label 기준 미발견 |
+
+`cluster-check` 종료 코드는 **0**입니다. PASS/WARN만 있으면 0인 CLI 계약이며 GPU 준비 완료를 의미하지 않습니다.
+
+`workload-check examples/good/workload_two_gpu.yaml`은 Static 6개 check PASS,
+실제 Live 연결/Ready 조회 PASS, GPU/Device Plugin WARN을 반환했습니다.
+`node_eligibility`와 `gpu_feasibility`는 **FAIL**, 종료 코드는 **1**입니다.
+실제 evidence는 `GPU capacity insufficient: allocatable=0, required=2`입니다.
+이는 조회 기반 사전 판정이며, workload를 apply하거나 scheduler의 Pending Event를 재현한 결과가 아닙니다.
+
+### NOT VERIFIED
+
+- real NVIDIA GPU allocatable on Kubernetes Node
+- NVIDIA Device Plugin in a real GPU cluster (현재 검사는 이름/label 기반 존재 조회)
+- real Kubernetes GPU scheduling
+- vLLM GPU Pod
+
+### Evidence 및 재현
+
+- [environment.txt](evidence/live-cluster/environment.txt): 버전, baseline commit, 실행 환경
+- [kubectl-context.txt](evidence/live-cluster/kubectl-context.txt): 실제 context 출력
+- [kubectl-nodes.txt](evidence/live-cluster/kubectl-nodes.txt): 실제 wide/JSON Node 출력
+- [cluster-check.json](evidence/live-cluster/cluster-check.json): 실제 CLI stdout 전체
+- [workload-check.json](evidence/live-cluster/workload-check.json): 실제 CLI stdout 전체
+- [command-results.txt](evidence/live-cluster/command-results.txt): 명령 및 실제 종료 코드
+- [pytest.txt](evidence/live-cluster/pytest.txt): 변경 후 회귀 테스트 출력 및 종료 코드
+
+생성 시 실행한 명령은 `kind create cluster --name gpu-guard-lab`이며,
+실제 사용된 node image는 `kindest/node:v1.37.0`입니다.
+기존 클러스터에서 아래 조회를 재실행할 때 current context가 맞는지 먼저 확인합니다.
+
+```powershell
+kubectl config current-context
+kubectl get nodes -o wide
+kubectl get nodes -o json
+.\.venv\Scripts\python.exe -m gpu_guard cluster-check
+.\.venv\Scripts\python.exe -m gpu_guard workload-check examples/good/workload_two_gpu.yaml
+.\.venv\Scripts\python.exe -m pytest
+```
+
+kubeconfig 전체, token, certificate, private key 및 Secret은 evidence에 저장하지 않았습니다.

@@ -1,0 +1,30 @@
+Captured: 2026-10-01T22:26:45.8592254+09:00
+Working directory: C:\Users\user\Documents\gpu-deploy-guard
+Command: git rev-parse HEAD
+03131cea55fed88a7c7316be25bf3359236eda43
+
+Exit code: 0
+Command: docker version --format {{.Server.Version}}
+29.8.0
+
+Exit code: 0
+Command: where.exe kind
+C:\Users\user\AppData\Local\Microsoft\WinGet\Packages\Kubernetes.kind_Microsoft.Winget.Source_8wekyb3d8bbwe\kind.exe
+
+Exit code: 0
+Command: kind version
+kind v0.33.0 go1.26.7 windows/amd64
+
+Exit code: 0
+Command: kubectl version --client
+Client Version: v1.36.1
+Kustomize Version: v5.8.1
+
+Exit code: 0
+Command: .\.venv\Scripts\python.exe --version
+Python 3.14.7
+
+Exit code: 0
+Cluster creation: kind create cluster --name gpu-guard-lab; exit code 0; kindest/node:v1.37.0.
+Scope: CPU-only kind node; nvidia.com/gpu absent from Node allocatable. No claim about host physical GPU absence. No workload applied; read-only preflight only.
+Process PATH refreshed from persisted Machine/User PATH; no persistent PATH edit performed.

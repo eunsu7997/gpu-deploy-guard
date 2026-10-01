@@ -1,0 +1,29 @@
+Command: .\.venv\Scripts\python.exe -m pytest
+Timestamp: 2026-10-01T22:27:46.9427154+09:00
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\user\Documents\gpu-deploy-guard
+configfile: pyproject.toml
+testpaths: tests
+collected 509 items
+
+tests\test_affinity.py ................................................. [  9%]
+....................                                                     [ 13%]
+tests\test_cli.py ........................                               [ 18%]
+tests\test_cluster_checks.py ........................................... [ 26%]
+.........                                                                [ 28%]
+tests\test_cluster_cli.py ......                                         [ 29%]
+tests\test_eligibility.py .............................................  [ 38%]
+tests\test_feasibility.py ...............................                [ 44%]
+tests\test_kubectl.py ..............                                     [ 47%]
+tests\test_probe_validators.py ......................................... [ 55%]
+........................................................................ [ 69%]
+.....................                                                    [ 73%]
+tests\test_resource_validators.py ...................................... [ 81%]
+...............................................                          [ 90%]
+tests\test_validators.py ............................                    [ 95%]
+tests\test_workload_cli.py .....................                         [100%]
+
+============================= 509 passed in 6.41s =============================
+
+Exit code: 0
