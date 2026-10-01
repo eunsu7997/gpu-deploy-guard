@@ -1,0 +1,52 @@
+Command: kubectl describe pod two-gpu-workload-9d597575b-h8ptq
+Exit code: 0
+
+Name:             two-gpu-workload-9d597575b-h8ptq
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             <none>
+Labels:           app=resource-example
+                  pod-template-hash=9d597575b
+Annotations:      <none>
+Status:           Pending
+IP:
+IPs:              <none>
+Controlled By:    ReplicaSet/two-gpu-workload-9d597575b
+Containers:
+  workload:
+    Image:      example.invalid/llm-workload:placeholder
+    Port:       <none>
+    Host Port:  <none>
+    Limits:
+      cpu:             2
+      memory:          8Gi
+      nvidia.com/gpu:  2
+    Requests:
+      cpu:             500m
+      memory:          4Gi
+      nvidia.com/gpu:  2
+    Liveness:          exec [sh -c test -f /tmp/healthy] delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:         tcp-socket :8080 delay=0s timeout=1s period=10s #success=1 #failure=3
+    Startup:           http-get http://:8080/health delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:       <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-dgkrt (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  kube-api-access-dgkrt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  92s   default-scheduler  0/1 nodes are available: 1 Insufficient nvidia.com/gpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.

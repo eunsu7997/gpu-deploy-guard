@@ -1,0 +1,11 @@
+Command: kubectl get deployment
+Exit code: 0
+
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+two-gpu-workload   0/1     1            0           92s
+
+Command: kubectl get pods -o wide
+Exit code: 0
+
+NAME                               READY   STATUS    RESTARTS   AGE   IP       NODE     NOMINATED NODE   READINESS GATES
+two-gpu-workload-9d597575b-h8ptq   0/1     Pending   0          92s   <none>   <none>   <none>           <none>

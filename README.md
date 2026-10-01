@@ -554,3 +554,35 @@ CLI 계약이며, Kubernetes GPU 준비 완료를 뜻하지 않습니다.
 - [summary.txt](evidence/gpu-boundary/summary.txt): 검증 범위, exit code, VERIFIED/NOT VERIFIED 요약
 
 kubeconfig 전체, token, certificate, private key 및 Secret은 evidence에 저장하지 않았습니다.
+
+## Preflight vs Actual Scheduler
+
+GPUDeploy Guard의 배포 전 판정과 실제 Kubernetes scheduler 결과가 같은 원인을
+가리키는지 확인하기 위해 GPU 2개를 요청하는
+`examples/good/workload_two_gpu.yaml`을 기존 CPU-only kind cluster에 적용했습니다.
+
+| 단계 | 실제 결과 |
+|---|---|
+| 사전판정 | `workload-check`의 `node_eligibility`와 `gpu_feasibility`가 FAIL, exit 1 |
+| 예측 원인 | `GPU capacity insufficient: allocatable=0, required=2` |
+| 적용 | `kubectl apply` 성공, Deployment `two-gpu-workload` 생성 |
+| Pod 상태 | `Pending`, Node 미할당, Deployment Ready `0/1` |
+| Scheduler Event | `FailedScheduling`: `0/1 nodes are available: 1 Insufficient nvidia.com/gpu.` |
+| 비교 | GPU capacity 부족이라는 같은 원인을 지목하므로 **MATCH** |
+
+`kubectl apply` 성공은 workload 실행 성공을 의미하지 않습니다.
+Deployment object는 생성됐지만 Pod는 Pending이며 컨테이너 실행 증거가 없습니다.
+실제 scheduling 실패 원인은 scheduler Event에 기록된
+`Insufficient nvidia.com/gpu`입니다. GPUDeploy Guard의 사전판정과 실제 scheduler는
+모두 이 workload를 수용할 NVIDIA GPU capacity가 없음을 원인으로 지목했습니다.
+
+### Evidence
+
+- [preflight.txt](evidence/deployment-compare/preflight.txt): 배포 전 `workload-check` 출력과 exit code
+- [apply.txt](evidence/deployment-compare/apply.txt): 최초 `kubectl apply` 결과
+- [pods.txt](evidence/deployment-compare/pods.txt): Deployment와 Pending Pod 상태
+- [pod-describe.txt](evidence/deployment-compare/pod-describe.txt): Pod 상세 정보와 Events
+- [scheduler-events.txt](evidence/deployment-compare/scheduler-events.txt): `FailedScheduling` Event 원문
+- [summary.txt](evidence/deployment-compare/summary.txt): PRE-DEPLOY / POST-DEPLOY / MATCH 비교
+
+이 검증은 GPU Pod가 실행됐거나 Kubernetes에서 GPU workload가 성공적으로 배치됐음을 증명하지 않습니다.

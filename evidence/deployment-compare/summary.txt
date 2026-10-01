@@ -1,0 +1,13 @@
+PRE-DEPLOY:
+- GPUDeploy Guard result: node_eligibility=FAIL; gpu_feasibility=FAIL
+- exit code: 1
+- predicted reason: GPU capacity insufficient: allocatable=0, required=2
+
+POST-DEPLOY:
+- Pod phase: Pending
+- scheduler event: FailedScheduling
+- actual reason: 0/1 nodes are available: 1 Insufficient nvidia.com/gpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+
+COMPARISON:
+- Both results identify insufficient NVIDIA GPU capacity for the two-GPU workload.
+- MATCH

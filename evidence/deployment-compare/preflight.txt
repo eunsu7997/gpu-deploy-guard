@@ -1,0 +1,144 @@
+Command: .\.venv\Scripts\python.exe -m gpu_guard workload-check examples/good/workload_two_gpu.yaml
+Exit code: 1
+
+[
+  {
+    "check": "gpu_resource_limit",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').resources.limits['nvidia.com/gpu'] = 2; required numeric value >= 1",
+    "recommendation": "No change required for this GPU limit."
+  },
+  {
+    "check": "cpu_resources",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').resources: requests.cpu = '500m'; limits.cpu = '2'",
+    "recommendation": "No change required for CPU resource presence and format."
+  },
+  {
+    "check": "memory_resources",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').resources: requests.memory = '4Gi'; limits.memory = '8Gi'",
+    "recommendation": "No change required for Memory resource presence and format."
+  },
+  {
+    "check": "startup_probe",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').startupProbe = {'httpGet': {'path': '/health', 'port': 8080}}",
+    "recommendation": "No change required for startupProbe handler structure."
+  },
+  {
+    "check": "readiness_probe",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').readinessProbe = {'tcpSocket': {'port': 8080}}",
+    "recommendation": "No change required for readinessProbe handler structure."
+  },
+  {
+    "check": "liveness_probe",
+    "status": "PASS",
+    "evidence": "spec.template.spec.containers[0] (name='workload').livenessProbe = {'exec': {'command': ['sh', '-c', 'test -f /tmp/healthy']}}",
+    "recommendation": "No change required for livenessProbe handler structure."
+  },
+  {
+    "check": "kubectl_availability",
+    "status": "PASS",
+    "evidence": "kubectl client available",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "current_context",
+    "status": "PASS",
+    "evidence": "current-context = kind-gpu-guard-lab",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "api_connection",
+    "status": "PASS",
+    "evidence": "kubectl get nodes succeeded",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "node_ready",
+    "status": "PASS",
+    "evidence": "nodes.total = 1; nodes.ready = 1; nodes[0].Ready = True",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "gpu_allocatable",
+    "status": "WARN",
+    "evidence": "nvidia.com/gpu = 0; nodes[0].nvidia.com/gpu = '0' (key missing)",
+    "recommendation": "No NVIDIA GPU allocatable reported; a GPU-free development cluster is supported."
+  },
+  {
+    "check": "nvidia_device_plugin",
+    "status": "WARN",
+    "evidence": "kube-system pods.total = 8; NVIDIA device plugin not found by name/labels",
+    "recommendation": "Verify NVIDIA device plugin deployment and its namespace/name/labels if GPU support is expected."
+  },
+  {
+    "check": "node_eligibility",
+    "status": "FAIL",
+    "evidence": {
+      "workload": {
+        "node_selector": {},
+        "node_name": null,
+        "gpu_request": 2,
+        "tolerations": []
+      },
+      "nodes": {
+        "gpu-guard-lab-control-plane": {
+          "name": "gpu-guard-lab-control-plane",
+          "ready": true,
+          "labels": {
+            "beta.kubernetes.io/arch": "amd64",
+            "beta.kubernetes.io/os": "linux",
+            "kubernetes.io/arch": "amd64",
+            "kubernetes.io/hostname": "gpu-guard-lab-control-plane",
+            "kubernetes.io/os": "linux",
+            "node-role.kubernetes.io/control-plane": ""
+          },
+          "unschedulable": false,
+          "taints": [],
+          "allocatable_gpu": 0,
+          "eligible": false,
+          "reasons": [
+            "GPU capacity insufficient: allocatable=0, required=2"
+          ],
+          "information": []
+        }
+      },
+      "constraint_candidates": [
+        "gpu-guard-lab-control-plane"
+      ],
+      "eligible_nodes": [],
+      "prefer_no_schedule_policy": "non-blocking information"
+    },
+    "recommendation": "No Ready node satisfies the workload scheduling constraints and GPU capacity."
+  },
+  {
+    "check": "gpu_feasibility",
+    "status": "FAIL",
+    "evidence": {
+      "workload_gpu_request": 2,
+      "container_requests": [
+        {
+          "index": 0,
+          "name": "workload",
+          "observed_value": 2,
+          "gpu_request": 2
+        }
+      ],
+      "ready_nodes": {
+        "gpu-guard-lab-control-plane": 0
+      },
+      "excluded_not_ready_nodes": {},
+      "max_gpu_on_ready_node": 0,
+      "comparison": "Node allocatable GPU capacity; not free GPU inventory",
+      "matching_ready_nodes": [],
+      "eligible_node_capacities": {
+        "gpu-guard-lab-control-plane": 0
+      },
+      "max_gpu_on_eligible_node": 0
+    },
+    "recommendation": "No single eligible Ready node exposes enough allocatable NVIDIA GPUs for this Pod."
+  }
+]

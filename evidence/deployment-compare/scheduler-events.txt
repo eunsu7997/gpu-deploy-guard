@@ -1,0 +1,9 @@
+Command: kubectl get events --field-selector involvedObject.kind=Pod,involvedObject.name=two-gpu-workload-9d597575b-h8ptq --sort-by=.metadata.creationTimestamp
+Exit code: 0
+
+LAST SEEN   TYPE      REASON             OBJECT                                 MESSAGE
+92s         Warning   FailedScheduling   pod/two-gpu-workload-9d597575b-h8ptq   0/1 nodes are available: 1 Insufficient nvidia.com/gpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+
+Extracted FailedScheduling event:
+Reason: FailedScheduling
+Message: 0/1 nodes are available: 1 Insufficient nvidia.com/gpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
