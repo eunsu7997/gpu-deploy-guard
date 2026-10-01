@@ -1,0 +1,57 @@
+Command: nvidia-smi
+Exit code: 0
+
+Thu Oct  1 23:29:40 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 616.92                 KMD Version: 616.92        CUDA UMD Version: 13.4     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4060      WDDM  |   00000000:01:00.0  On |                  N/A |
+|  0%   51C    P3            N/A  /  115W |    3633MiB /   8188MiB |     45%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2680    C+G   ...App_cw5n1h2txyewy\LockApp.exe      N/A      |
+|    0   N/A  N/A            8056    C+G   ...IA App\CEF\NVIDIA Overlay.exe      N/A      |
+|    0   N/A  N/A            8380    C+G   ...\codex-computer-use-swift.exe      N/A      |
+|    0   N/A  N/A            8428    C+G   ...em32\ApplicationFrameHost.exe      N/A      |
+|    0   N/A  N/A           12220    C+G   ...856.84.x64\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           14364    C+G   ...2p2nqsd0c76g0\app\ChatGPT.exe      N/A      |
+|    0   N/A  N/A           14372    C+G   ...856.84.x64\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           15552    C+G   ...856.84.x64\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           16944    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    0   N/A  N/A           19952    C+G   ...856.84.x64\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           20884    C+G   ...y\StartMenuExperienceHost.exe      N/A      |
+|    0   N/A  N/A           22120    C+G   ...indows\System32\ShellHost.exe      N/A      |
+|    0   N/A  N/A           23648    C+G   C:\Windows\explorer.exe               N/A      |
+|    0   N/A  N/A           24048    C+G   ...8bbwe\PhoneExperienceHost.exe      N/A      |
+|    0   N/A  N/A           24308    C+G   ...IA App\CEF\NVIDIA Overlay.exe      N/A      |
+|    0   N/A  N/A           24804    C+G   ....0.4258.37\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           25420    C+G   ...2txyewy\CrossDeviceResume.exe      N/A      |
+|    0   N/A  N/A           26020    C+G   ...cord\app-1.0.9260\Discord.exe      N/A      |
+|    0   N/A  N/A           26260    C+G   ...em_tray\lghub_system_tray.exe      N/A      |
+|    0   N/A  N/A           27112    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    0   N/A  N/A           28036    C+G   ...856.84.x64\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A           29940    C+G   ...ntrolPanel\SystemSettings.exe      N/A      |
+|    0   N/A  N/A           30208    C+G   ...oaming\Umba\UmbaWallpaper.exe      N/A      |
+|    0   N/A  N/A           31312    C+G   ..._cw5n1h2txyewy\SearchHost.exe      N/A      |
+|    0   N/A  N/A           31764    C+G   ...ocal\Programs\OP.GG\OP.GG.exe      N/A      |
+|    0   N/A  N/A           33972    C+G   ...kyb3d8bbwe\EdgeGameAssist.exe      N/A      |
+|    0   N/A  N/A           35648    C+G   ...cw5n1h2txyewy\WidgetBoard.exe      N/A      |
+|    0   N/A  N/A           37840    C+G   ...SnippingTool\SnippingTool.exe      N/A      |
+|    0   N/A  N/A           39800    C+G   ...yb3d8bbwe\WindowsTerminal.exe      N/A      |
+|    0   N/A  N/A           41096    C+G   ...t\Edge\Application\msedge.exe      N/A      |
+|    0   N/A  N/A           41432    C+G   ...2p2nqsd0c76g0\app\ChatGPT.exe      N/A      |
+|    0   N/A  N/A           41768    C+G   ...t\Edge\Application\msedge.exe      N/A      |
+|    0   N/A  N/A           42164    C+G   ..._pzs8sxrjxfjjc\app\claude.exe      N/A      |
+|    0   N/A  N/A           44604    C+G   ..._pzs8sxrjxfjjc\app\claude.exe      N/A      |
+|    0   N/A  N/A           47760    C+G   ...p\frontend\Docker Desktop.exe      N/A      |
++-----------------------------------------------------------------------------------------+

@@ -1,0 +1,10 @@
+Command: docker run --rm --gpus all --entrypoint sh nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0 -lc 'nvidia-smi --query-gpu=index,name --format=csv,noheader && /cuda-samples/sample'
+Exit code: 0
+
+0, NVIDIA GeForce RTX 4060
+[Vector addition of 50000 elements]
+Copy input data from the host memory to the CUDA device
+CUDA kernel launch with 196 blocks of 256 threads
+Copy output data from the CUDA device to the host memory
+Test PASSED
+Done

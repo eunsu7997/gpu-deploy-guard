@@ -1,0 +1,33 @@
+Environment boundary evidence
+Kubernetes context: kind-gpu-guard-lab
+
+Command exit codes:
+- nvidia-smi: 0
+- docker GPU nvidia-smi: 0
+- Docker CUDA vectorAdd smoke test: 0
+- kubectl get nodes -o json: 0
+- gpu_guard cluster-check: 0
+- gpu_guard workload-check examples/good/workload_two_gpu.yaml: 1
+
+Observed Kubernetes node fields:
+- status.allocatable["nvidia.com/gpu"]: MISSING
+- status.capacity["nvidia.com/gpu"]: MISSING
+- Ready: True
+
+Docker GPU compute method:
+- Official NVIDIA nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0 image.
+- One indexed GPU row identifies device count 1 and NVIDIA GeForce RTX 4060.
+- The CUDA vectorAdd sample completed with Test PASSED.
+
+VERIFIED:
+- Host RTX 4060
+- Docker GPU access
+- Docker GPU compute
+- Kubernetes API/Ready Node
+- GPUDeploy Guard detects missing Kubernetes GPU capacity
+
+NOT VERIFIED:
+- Kubernetes nvidia.com/gpu allocatable
+- NVIDIA Device Plugin on GPU Node
+- real Kubernetes GPU scheduling
+- GPU Pod execution

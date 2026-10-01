@@ -504,3 +504,53 @@ kubectl get nodes -o json
 ```
 
 kubeconfig 전체, token, certificate, private key 및 Secret은 evidence에 저장하지 않았습니다.
+
+
+## GPU Boundary Validation
+
+2026-10-01, Windows + Docker Desktop + WSL2 환경에서 Host GPU가 일반 Docker
+컨테이너까지 전달되는 경로와 현재 kind Kubernetes Node의 GPU resource 노출 여부를
+분리해 검증했습니다. 목적은 Docker GPU 성공을 Kubernetes GPU 성공으로 확대 해석하지 않고,
+GPUDeploy Guard가 실제 Live Kubernetes snapshot에서 GPU capacity 부족을 판정하는지 확인하는 것입니다.
+
+| 경로/검사 | 실제 결과 | 판정 범위 |
+|---|---|---|
+| Host | `nvidia-smi`가 NVIDIA GeForce RTX 4060을 인식, exit 0 | Host GPU 인식 VERIFIED |
+| Docker GPU | CUDA 12.4.1 컨테이너의 `nvidia-smi`가 RTX 4060을 인식, exit 0 | Docker GPU access VERIFIED |
+| Docker CUDA compute | NVIDIA CUDA vectorAdd sample이 50,000개 원소 연산 후 `Test PASSED`, exit 0 | Docker GPU compute VERIFIED |
+| kind Node | `gpu-guard-lab-control-plane` Ready=True, capacity/allocatable에 `nvidia.com/gpu` 키 없음 | Kubernetes API/Ready 조회만 VERIFIED |
+| `cluster-check` | kubectl/context/API/Ready PASS, GPU allocatable 및 Device Plugin WARN, exit 0 | GPU 미노출 상태 탐지 VERIFIED |
+| `workload-check` | Static checks와 Live 조회 PASS, node eligibility와 GPU feasibility FAIL, exit 1 | 요청 2 GPU 대비 allocatable 0 판정 VERIFIED |
+
+Docker GPU access와 CUDA compute 성공은 Kubernetes에서 GPU workload가 배치됐다는 증거가 아닙니다.
+현재 kind Node의 `status.capacity`와 `status.allocatable`에는 모두
+`nvidia.com/gpu`가 없습니다. `cluster-check`의 exit 0은 PASS/WARN 조합에 대한
+CLI 계약이며, Kubernetes GPU 준비 완료를 뜻하지 않습니다.
+
+### VERIFIED
+
+- Host RTX 4060 인식
+- 일반 Docker CUDA 컨테이너의 GPU access
+- Docker 컨테이너의 실제 CUDA vectorAdd 연산
+- 실제 kind Kubernetes API 연결 및 Ready Node 조회
+- GPUDeploy Guard의 Kubernetes GPU capacity 누락 탐지
+- GPU 2개 요청 workload에 대한 node eligibility 및 GPU feasibility FAIL 판정
+
+### NOT VERIFIED
+
+- Kubernetes Node의 실제 `nvidia.com/gpu` capacity/allocatable
+- 실제 GPU Node에서 NVIDIA Device Plugin 성공
+- 실제 Kubernetes GPU scheduling
+- GPU Pod 실행
+
+### Evidence
+
+- [host-nvidia-smi.txt](evidence/gpu-boundary/host-nvidia-smi.txt): Host `nvidia-smi` 원문과 exit code
+- [docker-gpu.txt](evidence/gpu-boundary/docker-gpu.txt): Docker CUDA 컨테이너 GPU 조회
+- [docker-gpu-compute.txt](evidence/gpu-boundary/docker-gpu-compute.txt): NVIDIA CUDA vectorAdd 실제 연산
+- [kubernetes-node-gpu.txt](evidence/gpu-boundary/kubernetes-node-gpu.txt): 실제 Node JSON과 GPU key 확인
+- [cluster-check.json](evidence/gpu-boundary/cluster-check.json): 실제 `cluster-check` JSON 출력
+- [workload-check.json](evidence/gpu-boundary/workload-check.json): 실제 `workload-check` JSON 출력
+- [summary.txt](evidence/gpu-boundary/summary.txt): 검증 범위, exit code, VERIFIED/NOT VERIFIED 요약
+
+kubeconfig 전체, token, certificate, private key 및 Secret은 evidence에 저장하지 않았습니다.

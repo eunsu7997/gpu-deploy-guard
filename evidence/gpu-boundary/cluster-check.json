@@ -1,0 +1,38 @@
+[
+  {
+    "check": "kubectl_availability",
+    "status": "PASS",
+    "evidence": "kubectl client available",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "current_context",
+    "status": "PASS",
+    "evidence": "current-context = kind-gpu-guard-lab",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "api_connection",
+    "status": "PASS",
+    "evidence": "kubectl get nodes succeeded",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "node_ready",
+    "status": "PASS",
+    "evidence": "nodes.total = 1; nodes.ready = 1; nodes[0].Ready = True",
+    "recommendation": "No change required."
+  },
+  {
+    "check": "gpu_allocatable",
+    "status": "WARN",
+    "evidence": "nvidia.com/gpu = 0; nodes[0].nvidia.com/gpu = '0' (key missing)",
+    "recommendation": "No NVIDIA GPU allocatable reported; a GPU-free development cluster is supported."
+  },
+  {
+    "check": "nvidia_device_plugin",
+    "status": "WARN",
+    "evidence": "kube-system pods.total = 8; NVIDIA device plugin not found by name/labels",
+    "recommendation": "Verify NVIDIA device plugin deployment and its namespace/name/labels if GPU support is expected."
+  }
+]
