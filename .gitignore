@@ -22,6 +22,9 @@ artifacts/
 !.env.example
 .aws/
 .kube/
+kubeconfig
+kubeconfig.*
+*.kubeconfig
 *.pem
 *.key
 

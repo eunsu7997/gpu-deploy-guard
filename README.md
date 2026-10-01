@@ -3,7 +3,55 @@
 Kubernetes GPU/LLM workload 배포 전 설정과 GPU 준비 상태를 검사하기 위한 Python CLI 프로젝트입니다.
 현재 구현 범위는 **Static YAML Validation, 조회 전용 Cluster Preflight, 단일 Pod scheduling eligibility와 GPU capacity feasibility**입니다.
 
-## 구조
+## Problem
+
+Kubernetes API가 Deployment object를 받아들였다는 사실만으로 GPU Pod가 실행 가능한 것은 아닙니다.
+GPU resource 누락, Ready Node 부족, selector/affinity/taint 불일치 또는 단일 Node capacity 부족은
+배포 후 Pod를 Pending 상태로 남길 수 있습니다. GPUDeploy Guard는 apply 전에 이 조건을
+결정론적 JSON 결과와 exit code로 보여 주어 원인을 먼저 확인할 수 있게 합니다.
+
+## What it checks
+
+| 명령 | 검사 범위 |
+|---|---|
+| `check FILE` | GPU limit, CPU/Memory request·limit 형식, Startup/Readiness/Liveness Probe |
+| `cluster-check` | kubectl, current context, API 연결, Ready Node, `nvidia.com/gpu` allocatable, Device Plugin Pod 존재 |
+| `workload-check FILE` | Static 검사 + Ready/nodeName/nodeSelector/required nodeAffinity/cordon/taint 조건 + 단일 Node GPU fit |
+
+이 도구는 scheduler 전체를 재현하지 않습니다. 지원한 조건에 대한 preflight이며,
+PASS도 실제 scheduling 성공을 보장하지 않습니다.
+
+## Verified evidence
+
+| 구분 | observed 결과 |
+|---|---|
+| 자동 검증 | 로컬 pytest **509 passed**; commit `aabf50c`의 [CI Validation 성공](https://github.com/eunsu7997/gpu-deploy-guard/actions/runs/36882281894) |
+| Host/Docker | RTX 4060 인식, Docker GPU access, CUDA vector addition `Test PASSED` |
+| 현재 kind 환경 | Kubernetes API 연결 및 Node Ready VERIFIED; CPU-only Node이며 `nvidia.com/gpu` capacity/allocatable 미노출 |
+| Preflight | GPU 2개 요청에 `allocatable=0, required=2`를 감지하고 exit 1 |
+| 실제 scheduler 비교 | Deployment object 생성 후 Pod Pending; scheduler가 `Insufficient nvidia.com/gpu`를 보고하여 preflight와 **MATCH** |
+
+**NOT VERIFIED:** 실제 GPU Kubernetes Node의 `nvidia.com/gpu` 광고,
+실제 GPU Node에서 NVIDIA Device Plugin runtime 정상 동작, Kubernetes GPU workload 실제 배치,
+GPU Pod 또는 vLLM Pod 실행.
+
+## Quick start
+
+Python 3.10 이상과 프로젝트 루트를 기준으로 실행합니다.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m gpu_guard check examples/good/probes_complete.yaml
+.\.venv\Scripts\python.exe -m gpu_guard cluster-check
+.\.venv\Scripts\python.exe -m gpu_guard workload-check examples/good/workload_two_gpu.yaml
+```
+
+현재 저장된 kind evidence에서는 `cluster-check`가 GPU 관련 WARN과 exit 0,
+`workload-check`가 GPU capacity 부족 FAIL과 exit 1을 반환했습니다.
+일반적인 exit code 계약은 0=PASS/WARN, 1=rule FAIL, 2=input/CLI error입니다.
+
+## Architecture / Repository map
 
 ```text
 pyproject.toml                  패키징, 의존성, CLI 진입점, pytest 설정
@@ -188,8 +236,8 @@ Device Plugin 식별 기준은 [NVIDIA 공식 manifest](https://github.com/NVIDI
 
 2026-10-01 작업 전 전체 271개, 구현 후 전체 343개 pytest 테스트가 통과했습니다.
 테스트는 실제 cluster에 의존하지 않고 Fake command result와 Mock subprocess를 사용합니다.
-현재 PC에서 cluster-check CLI를 실제 실행했으며 `kubectl executable not found`와 종료 코드 1을 확인했습니다.
-**현재 환경에서는 Live Cluster 실행을 검증하지 못함.** kubectl 설치나 cluster 설정은 수행하지 않았습니다.
+해당 구현 단계 당시 PC에서 cluster-check CLI를 실제 실행했으며 `kubectl executable not found`와 종료 코드 1을 확인했습니다.
+**해당 구현 단계 당시 환경에서는 Live Cluster 실행을 검증하지 못함.** kubectl 설치나 cluster 설정은 수행하지 않았습니다.
 API 연결·Node Ready·GPU allocatable·Device Plugin 성공 판정은 fake/mock으로만 검증했습니다.
 
 allocatable은 이미 사용 중인 GPU를 차감한 잔여량이 아닙니다.
@@ -256,9 +304,9 @@ MIG, Dynamic Resource Allocation, GPU sharing/time-slicing, autoscaling은 지�
 6단계 구현 후 전체 385개 테스트가 통과했습니다.
 단일 노드 조건, NotReady 제외, multi-container 합계, malformed 값·JSON,
 kubectl 부재/API 실패, nodes 조회 1회 재사용은 Fake/Mock으로 검증했습니다.
-현재 PC에서 `workload-check examples/good/workload_two_gpu.yaml`을 실제 실행했습니다.
+해당 구현 단계 당시 PC에서 `workload-check examples/good/workload_two_gpu.yaml`을 실제 실행했습니다.
 Static checks는 PASS, kubectl 부재로 Live checks와 Feasibility는 FAIL, 종료 코드는 1이었습니다.
-**현재 환경에서는 Live Cluster 실행을 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
+**해당 구현 단계 당시 환경에서는 Live Cluster 실행을 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
 
 ## Node eligibility (7단계)
 
@@ -317,9 +365,9 @@ workload-check 결과가 한 check 늘어나므로 기존 테스트의 결과 �
 selector mismatch GPU 4 + selector match GPU 1 / request 2는 eligibility와 GPU feasibility 모두 FAIL입니다.
 selector match GPU 2 + selector mismatch GPU 4 / request 2는 모두 PASS입니다.
 NotReady·cordon·NoSchedule·NoExecute·Equal·Exists·effect 생략·PreferNoSchedule 정책을 테스트했습니다.
-현재 PC에서 `workload-check examples/good/node_selector_match.yaml`을 실제 실행했고
+해당 구현 단계 당시 PC에서 `workload-check examples/good/node_selector_match.yaml`을 실제 실행했고
 kubectl 부재로 Live/Eligibility/Feasibility FAIL과 종료 코드 1을 확인했습니다.
-**현재 환경에서는 Live 성공 경로를 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
+**해당 구현 단계 당시 환경에서는 Live 성공 경로를 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
 
 ## Required nodeAffinity (8단계)
 
@@ -376,17 +424,17 @@ OR/AND, 6개 operator, NotIn key 미존재, 숫자 실패,
 selector/nodeName 결합 및 GPU 후보 제한은 Fake/Mock으로 검증했습니다.
 affinity mismatch GPU 8 + affinity match GPU 1 / request 2는
 node_eligibility와 gpu_feasibility 모두 FAIL입니다.
-현재 PC에서 `workload-check examples/good/affinity_in_match.yaml`을 실제 실행했고
+해당 구현 단계 당시 PC에서 `workload-check examples/good/affinity_in_match.yaml`을 실제 실행했고
 kubectl 부재로 Live/Eligibility/Feasibility FAIL, 종료 코드 1을 확인했습니다.
-**현재 환경에서는 Live 성공 경로를 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
+**해당 구현 단계 당시 환경에서는 Live 성공 경로를 검증하지 못함.** kubectl/Kubernetes 설치·설정은 수행하지 않았습니다.
 
 ## 설계 원칙 및 향후 범위
 
 - PASS/WARN/FAIL은 deterministic rule로 결정하고 LLM은 판정을 결정하지 않습니다.
 - 모든 FAIL에는 실제 evidence를 출력하고 각 기능에 pytest 테스트를 작성합니다.
-- Docker는 아직 구현하지 않았습니다. GitHub Actions workflow는 작성했으며 GitHub에서 실행 결과는 아직 없습니다.
-- NVIDIA 드라이버 상태·실제 GPU 실행·잔여 GPU 수량 검사는 아직 구현하지 않았습니다.
-- 다음 단계 후보는 준비된 cluster에서 조회 검증, matchFields 지원 또는 실행 중인 Pod 요청을 반영한 GPU 잔여량 계산입니다.
+- CLI는 Docker/WSL 설정을 변경하거나 CUDA workload를 실행하지 않습니다. Host/Docker GPU 검증은 별도 명령의 실제 출력으로 evidence에 보존합니다.
+- CLI는 Kubernetes가 광고한 allocatable capacity를 비교하며 NVIDIA driver health, runtime GPU 사용량, 실시간 free GPU 수량을 직접 검사하지 않습니다.
+- 추가 범위 후보는 matchFields 지원 또는 실행 중인 Pod 요청을 반영한 GPU 잔여량 계산입니다.
 
 ## CI Validation
 
@@ -418,10 +466,10 @@ artifact에는 pytest JUnit XML, Static CLI JSON 및 기대/실제 종료 코드
 artifact 업로드는 실패한 run에도 시도합니다. 증거 파일이 생성되기 전에 실패하면 일부 파일이 없을 수 있습니다.
 Artifact 동작은 [GitHub 공식 upload-artifact 문서](https://github.com/actions/upload-artifact/tree/v4)를 참고했습니다.
 
-이번 단계에서는 로컬 Git 저장소와 main branch만 준비합니다.
-GitHub remote 생성·push는 수행하지 않았으므로 **GitHub Actions 실행 결과나 run URL은 아직 없습니다**.
-workflow 구성과 로컬에서 실행한 pytest/Static CLI 검증을 GitHub CI 실행 evidence와 구분합니다.
-GitHub에 게시한 뒤 Actions run URL과 해당 commit SHA를 포트폴리오 검증 자료로 기록할 수 있습니다.
+GitHub `origin/main` push와 실제 CI 실행을 확인했습니다.
+최종 감사 직전 기준 commit `aabf50cdc477c25788b790ebfbe87f6f0e9c6521`의
+[CI Validation run 36882281894](https://github.com/eunsu7997/gpu-deploy-guard/actions/runs/36882281894)는 SUCCESS입니다.
+이 결과는 위 자동 검증 범위만 증명하며 Live Kubernetes 또는 실제 GPU scheduling 결과를 대신하지 않습니다.
 
 `.gitignore`는 가상 환경, Python cache, coverage/빌드/CI 출력, IDE·OS 임시 파일,
 로컬 환경·인증 파일을 제외합니다. src/tests/examples/README/pyproject/.github는 Git 관리 대상입니다.
