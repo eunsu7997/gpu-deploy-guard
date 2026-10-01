@@ -1,6 +1,6 @@
 # GPUDeploy Guard
 
-**Kubernetes GPU/LLM workload를 배포하기 전에 YAML과 실제 cluster 상태를 검사해 배포 실패 원인을 미리 잡는 deterministic Python CLI.**
+**Kubernetes GPU/LLM workload의 YAML과 실제 cluster 상태를 배포 전에 검사해 지원 범위의 scheduling 실패 조건을 사전 탐지하는 deterministic Python CLI.**
 
 ![GPUDeploy Guard validation summary](docs/images/gpu-deploy-guard-summary.svg)
 
@@ -25,7 +25,7 @@ Exit code는 0=PASS/WARN, 1=rule FAIL, 2=input/CLI error입니다.
 
 ## Why it matters
 
-**apply 이후 Pending 원인을 찾는 대신 apply 전에 같은 실패 조건을 보여 줍니다.**
+**지원하는 규칙 범위의 실패 조건을 apply 전에 사전 탐지합니다. 실제로 검증한 GPU capacity 부족 시나리오에서는 사전판정과 Kubernetes scheduler의 실패 원인이 MATCH했습니다.**
 결과는 PASS/WARN/FAIL JSON과 실제 관찰값으로 출력되므로 CI와 장애 분석 기록에 사용할 수 있습니다.
 
 ## Verified evidence
@@ -38,7 +38,7 @@ Exit code는 0=PASS/WARN, 1=rule FAIL, 2=input/CLI error입니다.
 | Docker GPU | CUDA 컨테이너에서 GPU access 확인 |
 | CUDA compute | NVIDIA vector addition `Test PASSED` |
 | 현재 kind 환경 | Kubernetes API 연결 및 Ready Node 확인 |
-| Kubernetes GPU resource | CPU-only kind Node에 `nvidia.com/gpu` capacity/allocatable 미노출 |
+| Kubernetes GPU resource | 현재 kind Node에 `nvidia.com/gpu` capacity/allocatable 미노출 |
 | Preflight | `GPU capacity insufficient: allocatable=0, required=2`, exit 1 |
 | Actual scheduler | `Insufficient nvidia.com/gpu`로 Pod Pending |
 | Comparison | Preflight와 scheduler가 같은 GPU capacity 부족을 보고하여 **MATCH** |
@@ -103,7 +103,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m gpu_guard workload-check examples/good/workload_two_gpu.yaml
 ```
 
-현재 저장된 CPU-only kind evidence에서는 `cluster-check`가 GPU 관련 WARN과 exit 0,
+현재 저장된 kind evidence에서는 `cluster-check`가 GPU 관련 WARN과 exit 0,
 `workload-check`가 GPU capacity 부족 FAIL과 exit 1을 반환했습니다.
 결과는 cluster 상태에 따라 달라집니다.
 
@@ -122,7 +122,7 @@ python -m venv .venv
 
 | 범위 | 주요 파일 |
 |---|---|
-| Live CPU-only kind | [environment](evidence/live-cluster/environment.txt), [cluster-check](evidence/live-cluster/cluster-check.json), [workload-check](evidence/live-cluster/workload-check.json) |
+| Live kind cluster | [environment](evidence/live-cluster/environment.txt), [cluster-check](evidence/live-cluster/cluster-check.json), [workload-check](evidence/live-cluster/workload-check.json) |
 | Host/Docker GPU boundary | [summary](evidence/gpu-boundary/summary.txt), [CUDA compute](evidence/gpu-boundary/docker-gpu-compute.txt), [Kubernetes Node](evidence/gpu-boundary/kubernetes-node-gpu.txt) |
 | Preflight vs scheduler | [summary](evidence/deployment-compare/summary.txt), [apply](evidence/deployment-compare/apply.txt), [scheduler Events](evidence/deployment-compare/scheduler-events.txt) |
 
