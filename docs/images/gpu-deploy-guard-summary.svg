@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <style>
+    .title{font:700 64px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#102238}
+    .subtitle{font:500 28px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#5d6b7a}
+    .h2{font:700 28px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#102238}
+    .small{font:500 20px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#667382}
+    .mono-sm{font:500 18px Consolas,Menlo,monospace;fill:#f4f7fb}
+    .label{font:700 18px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+    .body{font:600 21px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#24364a}
+    .bottom{font:700 21px Arial,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#24364a}
+  </style>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="7" stdDeviation="12" flood-color="#203040" flood-opacity=".10"/></filter>
+</defs>
+<rect width="1600" height="900" fill="#f7f9fc"/>
+<text x="800" y="82" text-anchor="middle" class="title">GPUDeploy Guard</text>
+<text x="800" y="126" text-anchor="middle" class="subtitle">배포 전 판단이 실제 Kubernetes scheduler 원인과 맞는지 검증</text>
+<rect x="50" y="175" width="480" height="560" rx="24" fill="#fff" stroke="#dbe4ee" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="96" cy="224" r="27" fill="#dcecff"/><text x="96" y="234" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#2167b1">1</text>
+<text x="140" y="232" class="h2">Cluster Preflight</text>
+<text x="140" y="265" class="small">실제 kind cluster 상태 조회</text>
+<rect x="78" y="302" width="424" height="320" rx="16" fill="#18222d"/>
+<text x="103" y="343" class="mono-sm" fill="#65b7ff">$ python -m gpu_guard cluster-check</text>
+<text x="103" y="392" class="mono-sm">kubectl_availability</text><rect x="390" y="370" width="84" height="30" rx="8" fill="#1fa968"/><text x="432" y="392" text-anchor="middle" class="label" fill="#fff">PASS</text>
+<text x="103" y="438" class="mono-sm">current_context</text><rect x="390" y="416" width="84" height="30" rx="8" fill="#1fa968"/><text x="432" y="438" text-anchor="middle" class="label" fill="#fff">PASS</text>
+<text x="103" y="484" class="mono-sm">api_connection</text><rect x="390" y="462" width="84" height="30" rx="8" fill="#1fa968"/><text x="432" y="484" text-anchor="middle" class="label" fill="#fff">PASS</text>
+<text x="103" y="530" class="mono-sm">node_ready</text><rect x="390" y="508" width="84" height="30" rx="8" fill="#1fa968"/><text x="432" y="530" text-anchor="middle" class="label" fill="#fff">PASS</text>
+<text x="103" y="576" class="mono-sm">gpu_allocatable</text><rect x="390" y="554" width="84" height="30" rx="8" fill="#efb62d"/><text x="432" y="576" text-anchor="middle" class="label" fill="#392900">WARN</text>
+<rect x="78" y="645" width="424" height="62" rx="14" fill="#fff5d8"/><text x="290" y="684" text-anchor="middle" class="body">Cluster 정상 · Kubernetes GPU 준비 미완료</text>
+<rect x="560" y="175" width="480" height="560" rx="24" fill="#fff" stroke="#dbe4ee" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="606" cy="224" r="27" fill="#dcecff"/><text x="606" y="234" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#2167b1">2</text>
+<text x="650" y="232" class="h2">Preflight vs Scheduler</text>
+<text x="650" y="265" class="small">사전판정과 실제 실패 원인 비교</text>
+<rect x="588" y="302" width="424" height="320" rx="16" fill="#18222d"/>
+<text x="613" y="344" class="mono-sm" fill="#65b7ff">Preflight</text>
+<text x="613" y="383" class="mono-sm">allocatable=0, required=2</text>
+<rect x="897" y="359" width="82" height="30" rx="8" fill="#e44545"/><text x="938" y="381" text-anchor="middle" class="label" fill="#fff">FAIL</text>
+<line x1="613" y1="411" x2="982" y2="411" stroke="#40505f"/>
+<text x="613" y="453" class="mono-sm" fill="#65b7ff">Actual scheduler</text>
+<text x="613" y="492" class="mono-sm">Pod: Pending · Node: unassigned</text>
+<text x="613" y="531" class="mono-sm">Insufficient nvidia.com/gpu</text>
+<rect x="588" y="645" width="424" height="62" rx="14" fill="#e7f7ee"/><text x="800" y="684" text-anchor="middle" class="body" fill="#126d43">Prediction → Actual : MATCH</text>
+<rect x="1070" y="175" width="480" height="560" rx="24" fill="#fff" stroke="#dbe4ee" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="1116" cy="224" r="27" fill="#dcecff"/><text x="1116" y="234" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#2167b1">3</text>
+<text x="1160" y="232" class="h2">GPU Boundary</text>
+<text x="1160" y="265" class="small">GPU 자체와 Kubernetes 노출을 분리 검증</text>
+<rect x="1098" y="302" width="424" height="320" rx="16" fill="#18222d"/>
+<text x="1123" y="349" class="mono-sm">Host GPU</text><text x="1285" y="349" class="mono-sm" fill="#73e2a4">RTX 4060 ✓</text>
+<text x="1123" y="401" class="mono-sm">Docker GPU</text><text x="1285" y="401" class="mono-sm" fill="#73e2a4">access ✓</text>
+<text x="1123" y="453" class="mono-sm">CUDA vectorAdd</text><text x="1285" y="453" class="mono-sm" fill="#73e2a4">PASSED ✓</text>
+<text x="1123" y="505" class="mono-sm">kind Node</text><text x="1285" y="505" class="mono-sm" fill="#ffd465">nvidia.com/gpu</text>
+<text x="1285" y="536" class="mono-sm" fill="#ffd465">NOT EXPOSED</text>
+<rect x="1098" y="645" width="424" height="62" rx="14" fill="#edf3ff"/><text x="1310" y="684" text-anchor="middle" class="body">Docker GPU 성공 ≠ K8s GPU 성공</text>
+<rect x="50" y="770" width="1500" height="86" rx="20" fill="#eaf1f8"/>
+<text x="190" y="823" text-anchor="middle" class="bottom">509 tests</text>
+<line x1="350" y1="793" x2="350" y2="835" stroke="#c5d2df" stroke-width="2"/>
+<text x="555" y="823" text-anchor="middle" class="bottom">GitHub Actions CI ✓</text>
+<line x1="760" y1="793" x2="760" y2="835" stroke="#c5d2df" stroke-width="2"/>
+<text x="980" y="812" text-anchor="middle" class="bottom">실제 GPU Kubernetes scheduling</text>
+<text x="980" y="838" text-anchor="middle" class="bottom" fill="#b74444">NOT VERIFIED</text>
+<line x1="1200" y1="793" x2="1200" y2="835" stroke="#c5d2df" stroke-width="2"/>
+<text x="1375" y="823" text-anchor="middle" class="bottom">Evidence 기반 검증</text>
+</svg>
